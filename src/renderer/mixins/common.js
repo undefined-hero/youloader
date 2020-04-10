@@ -9,7 +9,7 @@ export default {
         //   if (err) throw err
         //   console.log('title:', info.title)
         // }))
-        console.log(1)
+        // console.log(1)
         var video = $(l, ['--format=best'], { cwd: __dirname })
         video.on('info', function(info) {
           console.log('Download started')

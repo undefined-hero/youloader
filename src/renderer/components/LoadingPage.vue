@@ -2,18 +2,23 @@
   <div id="wrapper">
     <img id="logo" src="~@/assets/logo.png" alt="electron-vue">
     <main>
-      <div>
-        <li v-for="(link, index) in links" :key="link.id">
-          <input ref="links" v-model="links[index].url" v-on:keyup.enter="concat" type="text">
-        </li>
-        <button @click="download">Download</button>
+      <div class="area">
+        <ul>
+          <li v-for="(link, index) in links" :key="link.id">
+            <div class="input-plus-comp">
+              <input v-model="links[index].url" ref="links" v-on:keyup.enter="concat"/>
+              <button @click="concat">+</button>
+            </div>
+          </li>
+        </ul>
+        <button class="doc" @click="download">Download</button>
       </div>
     </main>
   </div>
 </template>
 
 <script>
-  import mixins from "../mixins/common"
+  import mixins from "@/mixins/common"
 
   export default {
     name: 'loading-page',
@@ -21,7 +26,8 @@
     data () {
       return {
         isLoading: false, 
-        links: [{url: "", isLoading: false}]
+        links: [{url: "", isLoading: false}],
+        regex: "^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+"
       }
     },
     computed: {
@@ -39,13 +45,15 @@
         }
         length = this.links.length
         this.$nextTick(() => {
-          console.log(this.$refs.links[length - 1])
           this.$refs.links[length - 1].focus()
         })
       },
-      download() {
+      async download() {
+        this.disabled = true
         const links = this.toList
-        console.log(this.downloadLinks(links))
+        // console.log(links)
+        await this.downloadLinks(links)
+        this.disabled = false
       }
     }
   }
@@ -85,37 +93,13 @@
     justify-content: space-between;
   }
 
-  main > div { flex-basis: 50%; }
-
-  .left-side {
-    display: flex;
-    flex-direction: column;
+  .area {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .welcome {
-    color: #555;
-    font-size: 23px;
-    margin-bottom: 10px;
-  }
-
-  .title {
-    color: #2c3e50;
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 6px;
-  }
-
-  .title.alt {
-    font-size: 18px;
-    margin-bottom: 10px;
-  }
-
-  .doc p {
-    color: black;
-    margin-bottom: 10px;
-  }
-
-  .doc button {
+  button.doc  {
     font-size: .8em;
     cursor: pointer;
     outline: none;
@@ -129,8 +113,38 @@
     border: 1px solid #4fc08d;
   }
 
-  .doc button.alt {
-    color: #42b983;
-    background-color: transparent;
+  .input-plus-comp {
+    display: flex;
+    flex-direction: row;
+    border: 1px solid #4fc08d;
+    font-size: .8em;
+    padding: 0.25em 0.25em 0.25em 2em;
+    border-radius: 2em;
+  }
+
+  .input-plus-comp input {
+    flex-grow: 2;
+    border: none;
+    outline: none;
+  }
+
+  .input-plus-comp button {
+    background-color: #4fc08d;
+    font-size: .8em;
+    border-radius: 2em;
+    color:white;
+    padding: 0.75em 2em;
+    padding-left: -10em;
+    outline: none;
+  }
+
+  ul {
+    list-style-type: none;
+  }
+
+  li {
+    margin-bottom: 0.8em;
+    display:flex;
+    flex-direction:row;
   }
 </style>
