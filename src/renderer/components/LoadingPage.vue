@@ -6,10 +6,11 @@
         <ul>
           <li v-for="(link, index) in links" :key="link.id">
             <div class="input-plus-comp">
-              <input v-model="links[index].url" ref="links" v-on:keyup.enter="concat"/>
-              <button @click="concat">+</button>
+              <input v-validate="{ regex: regex }" name="regex" v-model="links[index].url" ref="links"/>
+              <button @click="removeLine">X</button>
             </div>
           </li>
+          <button class="doc" @click="concat" :disabled="disable">Add a link</button>
         </ul>
         <button class="doc" @click="download">Download</button>
       </div>
@@ -26,8 +27,10 @@
     data () {
       return {
         isLoading: false, 
-        links: [{url: "", isLoading: false}],
-        regex: "^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+"
+        links: [{url: "", hasError: false}],
+        regex: /^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/,
+        isAddLinkBtnActive: false,
+        isDownloadBtnActive: false
       }
     },
     computed: {
@@ -38,15 +41,30 @@
     },
     methods: {
       concat() {
-        let length = this.links.length
-        let latest = () => this.links[length - 1].url
-        if(latest() != "" && length < 5) {
-          this.links = this.links.concat({url: "", isLoading: false})
-        }
-        length = this.links.length
-        this.$nextTick(() => {
-          this.$refs.links[length - 1].focus()
+        this.$validator.validate().then(valid => {
+          if(valid) {
+            let length = this.links.length
+            let url = this.links[length - 1].url
+            if(url != "" && length < 5) {
+              this.links.push({url: "", isLoading: false})
+            }
+            length = this.links.length
+            this.$nextTick(() => {
+              this.$refs.links[length - 1].focus()
+            })
+          }
         })
+      },
+      removeLine(e) {
+        const value = e.target.parentElement.firstElementChild.value
+        const index = this.toList.indexOf(value)
+        if (this.links.length > 1 && index > -1) {
+          this.links.splice(index, 1);
+        }
+        console.log()
+      },
+      disable() {
+        return !this.isAddLinkBtnActive
       },
       async download() {
         this.disabled = true
@@ -55,7 +73,12 @@
         await this.downloadLinks(links)
         this.disabled = false
       }
-    }
+    },
+    // watch: {
+    //   errors(a) {
+    //     console.log(a)
+    //   }
+    // }
   }
 </script>
 
@@ -111,6 +134,13 @@
     transition: all 0.15s ease;
     box-sizing: border-box;
     border: 1px solid #4fc08d;
+    margin-bottom: 0.8em;
+  }
+
+  button.doc:disabled {
+    background-color: #a2b9af;
+    border: 1px solid #a2b9af;
+    pointer-events: none;
   }
 
   .input-plus-comp {
@@ -129,13 +159,17 @@
   }
 
   .input-plus-comp button {
-    background-color: #4fc08d;
+    background-color: #e65f5f;
     font-size: .8em;
     border-radius: 2em;
     color:white;
-    padding: 0.75em 2em;
+    padding: 0.75em 1.25em;
     padding-left: -10em;
     outline: none;
+  }
+
+  .invalid {
+    border: 1px solid #e65f5f !important;
   }
 
   ul {
