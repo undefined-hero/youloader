@@ -3,16 +3,20 @@
     <img id="logo" src="~@/assets/logo.png" alt="electron-vue">
     <main>
       <div class="area">
-        <ul>
-          <li v-for="(link, index) in links" :key="link.id">
-            <div class="input-plus-comp">
-              <input v-validate="{ regex: regex }" name="regex" v-model="links[index].url" ref="links"/>
-              <button @click="removeLine">X</button>
-            </div>
-          </li>
-          <button class="doc" @click="concat" :disabled="disable">Add a link</button>
-        </ul>
-        <button class="doc" @click="download">Download</button>
+        <ValidationObserver v-slot="{ invalid }">
+          <form @submit.prevent>
+            <ul>
+              <li v-for="(link, index) in links" :key="link.id">
+                <ValidationProvider class="input-plus-comp" name="regex" :rules="{ required: true, regex: regex }">
+                  <input v-validate="{ regex: regex }" name="regex" v-model="links[index].url" ref="links" />
+                  <button @click="removeLine">X</button>
+                </ValidationProvider>
+              </li>
+              <button class="doc" @click="concat" :disabled="invalid">Add a link</button>
+            </ul>
+            <button class="doc" type="submit" :disabled="invalid" @click="download">Download</button>
+          </form>
+        </ValidationObserver>
       </div>
     </main>
   </div>
@@ -20,17 +24,21 @@
 
 <script>
   import mixins from "@/mixins/common"
+  import { ValidationProvider, ValidationObserver } from "vee-validate"
 
   export default {
     name: 'loading-page',
     mixins: [mixins],
+    components: {
+      ValidationProvider,
+      ValidationObserver
+    },
     data () {
       return {
         isLoading: false, 
         links: [{url: "", hasError: false}],
         regex: /^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/,
-        isAddLinkBtnActive: false,
-        isDownloadBtnActive: false
+        isAddBtnActive: false
       }
     },
     computed: {
@@ -61,24 +69,19 @@
         if (this.links.length > 1 && index > -1) {
           this.links.splice(index, 1);
         }
-        console.log()
       },
       disable() {
         return !this.isAddLinkBtnActive
       },
-      async download() {
+      download() {
+        console.log("downloading")
         this.disabled = true
         const links = this.toList
-        // console.log(links)
-        await this.downloadLinks(links)
-        this.disabled = false
+        console.log(links)
+        this.downloadLinks(links)
+        // this.disabled = false
       }
-    },
-    // watch: {
-    //   errors(a) {
-    //     console.log(a)
-    //   }
-    // }
+    }
   }
 </script>
 

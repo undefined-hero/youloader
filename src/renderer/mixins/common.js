@@ -10,13 +10,16 @@ export default {
         //   console.log('title:', info.title)
         // }))
         // console.log(1)
+        var videoName = ""
         var video = $(l, ['--format=best'], { cwd: __dirname })
         video.on('info', function(info) {
           console.log('Download started')
           console.log('filename: ' + info._filename)
+          videoName = info._filename;
           console.log('size: ' + info.size)
         })
-        video.pipe(fs.createWriteStream(`video${i}.mp4`))
+        // video.pipe(fs.createWriteStream(`video${i}.mp4`))
+        video.pipe(fs.createWriteStream(`vid.mp4`))
       })
     }
   }
